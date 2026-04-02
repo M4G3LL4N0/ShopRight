@@ -1,7 +1,7 @@
-import { Button } from "../ui/Button"
-import { GlassCard } from "../ui/GlassCard"
-import { cn } from "@/lib/utils"
-import Image from "next/image"
+import { Button } from "../ui/Button";
+import { GlassCard } from "../ui/GlassCard";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 export function Hero() {
   return (
@@ -30,28 +30,4 @@ export function Hero() {
           <div className="relative">
             <GlassCard className="p-6">
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <Image
-                    src="/sample-product.jpg"
-                    alt="Sample Product"
-                    width={64}
-                    height={64}
-                    className="rounded-lg"
-                  />
-                  <div>
-                    <h3 className="font-medium">Organic Avocado</h3>
-                    <p className="text-sm text-muted-foreground">$2.99 each</p>
-                  </div>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Recommended because: High in healthy fats, perfect ripeness,
-                  and on sale this week.
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
+                <div className="flex items-center gap
