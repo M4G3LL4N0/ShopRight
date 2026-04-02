@@ -1,15 +1,10 @@
 export type Recommendation = {
-  type: 'best' | 'value' | 'safe' | 'adventurous'
-  itemId: string
-  reasoning: string
-  confidence: number
-  summary?: string
+  best_item: string;
+  best_value: string;
+  safe_pick: string;
+  adventurous_pick: string;
+  reasoning: string;
+  confidence: number;
 }
 
-export type RecommendationSummary = {
-  best: Recommendation
-  value: Recommendation
-  safe: Recommendation
-  adventurous: Recommendation
-  overallSummary: string
-}
+export type RecommendationPayload = Recommendation | null;

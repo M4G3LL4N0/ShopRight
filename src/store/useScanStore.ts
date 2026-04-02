@@ -6,7 +6,7 @@ interface ScanState {
   selectedImageFile: File | null;
   selectedImagePreview: string | null;
   extractedItems: ExtractedItem[];
-  recommendations: Recommendation[];
+  recommendations: RecommendationPayload;
   loading: boolean;
   error: string | null;
   analyzedAt: Date | null;
@@ -18,7 +18,7 @@ interface ScanActions {
   removeImage: () => void;
   setVenueType: (type: VenueType) => void;
   startAnalysis: () => void;
-  completeAnalysis: (extractedItems: ExtractedItem[], recommendations: Recommendation[]) => void;
+  completeAnalysis: (extractedItems: ExtractedItem[], recommendations: RecommendationPayload) => void;
   setError: (error: string) => void;
   reset: () => void;
 }

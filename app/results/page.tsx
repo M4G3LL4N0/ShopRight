@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function ResultsPage() {
   const { recommendations } = useScanStore();
 
-  if (!recommendations) {
+  if (!recommendations || !recommendations.best_item) {
     return (
       <div className="min-h-screen bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -36,26 +36,34 @@ export default function ResultsPage() {
           </h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ResultCard
-              title="Best Overall"
-              item={recommendations.best_item}
-              explanation={recommendations.reasoning}
-            />
-            <ResultCard
-              title="Best Value"
-              item={recommendations.best_value}
-              explanation={recommendations.reasoning}
-            />
-            <ResultCard
-              title="Safe Pick"
-              item={recommendations.safe_pick}
-              explanation={recommendations.reasoning}
-            />
-            <ResultCard
-              title="Adventurous Pick"
-              item={recommendations.adventurous_pick}
-              explanation={recommendations.reasoning}
-            />
+            {recommendations.best_item && (
+              <ResultCard
+                title="Best Overall"
+                item={recommendations.best_item}
+                explanation={recommendations.reasoning}
+              />
+            )}
+            {recommendations.best_value && (
+              <ResultCard
+                title="Best Value"
+                item={recommendations.best_value}
+                explanation={recommendations.reasoning}
+              />
+            )}
+            {recommendations.safe_pick && (
+              <ResultCard
+                title="Safe Pick"
+                item={recommendations.safe_pick}
+                explanation={recommendations.reasoning}
+              />
+            )}
+            {recommendations.adventurous_pick && (
+              <ResultCard
+                title="Adventurous Pick"
+                item={recommendations.adventurous_pick}
+                explanation={recommendations.reasoning}
+              />
+            )}
           </div>
           
           <div className="flex justify-center mt-8">
