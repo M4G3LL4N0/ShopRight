@@ -1,33 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { analyzeImage } from '@/lib/analyzer';
-import { validateImage, convertToBase64 } from '@/lib/image';
-import { VenueType } from '@/types/scan';
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('image') as File;
-    const venueType = formData.get('venueType') as VenueType;
+    const body = await req.json();
+    const { image, venueType, preferences } = body ?? {};
 
-    if (!file || !venueType) {
+    if (!image) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: "Missing image payload." },
         { status: 400 }
       );
     }
 
-    validateImage(file);
-    const base64Image = await convertToBase64(file);
-    const analysis = await analyzeImage(base64Image, venueType);
-
-    return NextResponse.json(analysis);
+    return NextResponse.json({
+      success: true,
+      extractedItems: [],
+      recommendations: {
+        bestItem: null,
+        bestValue: null,
+        safePick: null,
+        adventurousPick: null,
+        overallSummary: "Analysis pipeline placeholder response.",
+        confidence: 0,
+      },
+      venueType: venueType ?? "restaurant",
+      preferences: preferences ?? null,
+    });
   } catch (error) {
-    console.error('Analysis error:', error);
+    console.error("Analyze route error:", error);
+
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Analysis failed' },
+      { error: "Failed to analyze image." },
       { status: 500 }
     );
   }
 }
-
-export const runtime = 'edge';
