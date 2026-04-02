@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 export type VenueType = 'restaurant' | 'bar' | 'grocery' | 'retail' | 'electronics';
 
-export type ExtractedItem = {
+export interface ExtractedItem {
   id: string;
   name: string;
   description?: string;
@@ -11,7 +11,7 @@ export type ExtractedItem = {
   confidence: number;
   category?: string;
   imageUrl?: string;
-};
+}
 
 export type ScanAnalysis = {
   extractedItems: ExtractedItem[];
@@ -51,7 +51,7 @@ Format your response as JSON with these fields:
 }
 `;
 
-export async function analyzeImage(imageBase64: string, venueType: VenueType) {
+export async function analyzeImage(base64Image: string, venueType: VenueType): Promise<{ extractedItems: ExtractedItem[] }> {
   try {
     const response = await getStructuredCompletion({
       model: 'gpt-4-vision-preview',
