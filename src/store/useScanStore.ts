@@ -77,3 +77,72 @@ export const useScanStore = create<ScanState>((set) => ({
     error: null
   })
 }));
+import { create } from 'zustand'
+import { VenueType } from '@/types/scan'
+
+type ScanState = {
+  selectedImageFile: File | null
+  selectedImagePreview: string | null
+  extractedItems: any[]
+  recommendations: any[]
+  loading: boolean
+  error: string | null
+  analyzedAt: Date | null
+  venueType: VenueType | null
+}
+
+type ScanActions = {
+  setImage: (file: File, preview: string) => void
+  removeImage: () => void
+  setVenueType: (type: VenueType) => void
+  startAnalysis: () => void
+  completeAnalysis: (extractedItems: any[], recommendations: any[]) => void
+  setError: (error: string) => void
+  reset: () => void
+}
+
+const initialState: ScanState = {
+  selectedImageFile: null,
+  selectedImagePreview: null,
+  extractedItems: [],
+  recommendations: [],
+  loading: false,
+  error: null,
+  analyzedAt: null,
+  venueType: null
+}
+
+export const useScanStore = create<ScanState & ScanActions>((set) => ({
+  ...initialState,
+  
+  setImage: (file, preview) => set({
+    selectedImageFile: file,
+    selectedImagePreview: preview,
+    error: null
+  }),
+  
+  removeImage: () => set({
+    selectedImageFile: null,
+    selectedImagePreview: null
+  }),
+  
+  setVenueType: (type) => set({ venueType: type }),
+  
+  startAnalysis: () => set({ 
+    loading: true,
+    error: null,
+    extractedItems: [],
+    recommendations: []
+  }),
+  
+  completeAnalysis: (extractedItems, recommendations) => set({
+    loading: false,
+    extractedItems,
+    recommendations,
+    analyzedAt: new Date()
+  }),
+  
+  setError: (error) => set({ error, loading: false }),
+  
+  reset: () => set(initialState)
+}))
