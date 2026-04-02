@@ -3,21 +3,21 @@ export type VenueType =
   | 'bar'
   | 'grocery'
   | 'retail'
-  | 'electronics'
+  | 'electronics';
 
-export type ExtractedItem = {
-  id: string
-  name: string
-  description?: string
-  price?: number
-  confidence: number
-  category?: string
-  imageUrl?: string
+export interface ExtractedItem {
+  id: string;
+  name: string;
+  description?: string;
+  price?: number;
+  confidence: number;
+  category?: string;
+  imageUrl?: string;
 }
 
-export type ScanAnalysis = {
-  extractedItems: ExtractedItem[]
-  recommendations: Recommendation[]
-  analyzedAt: Date
-  venueType: VenueType
+export interface ScanAnalysis {
+  extractedItems: ExtractedItem[];
+  recommendations: Recommendation[];
+  analyzedAt: Date;
+  venueType: VenueType;
 }
