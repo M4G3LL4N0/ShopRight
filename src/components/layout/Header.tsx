@@ -1,39 +1,49 @@
 import Link from "next/link";
-import { Button } from "../ui/Button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
+
+const nav = [
+  { href: "#product", label: "Product" },
+  { href: "#how-it-works", label: "How It Works" },
+  { href: "#intelligence", label: "Intelligence" },
+  { href: "/pricing", label: "Pricing" },
+];
 
 export function Header() {
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50",
-        "backdrop-blur-md bg-white/10 dark:bg-black/10",
-        "border-b border-white/10 dark:border-black/10"
-      )}
-    >
-      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-xl font-semibold tracking-tight">
-          ShopRight
+    <header className="sticky top-0 z-50 border-b border-white/8 bg-[#050914]/72 backdrop-blur-2xl">
+      <div className="container-shell flex h-[76px] items-center justify-between">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-sm font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)]">
+            SR
+          </div>
+          <div>
+            <div className="text-[17px] font-semibold tracking-tight text-white">
+              ShopRight
+            </div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-white/36">
+              Purchase Intelligence
+            </div>
+          </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="/product" className="hover:text-primary transition-colors">
-            Product
-          </Link>
-          <Link href="/how-it-works" className="hover:text-primary transition-colors">
-            How it Works
-          </Link>
-          <Link href="/pricing" className="hover:text-primary transition-colors">
-            Pricing
-          </Link>
-          <Link href="/sign-in" className="hover:text-primary transition-colors">
-            Sign In
-          </Link>
+        <nav className="hidden items-center gap-8 md:flex">
+          {nav.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="text-sm text-white/60 transition hover:text-white"
+            >
+              {item.label}
+            </a>
+          ))}
         </nav>
 
-        <Button className="ml-4" asChild>
-          <Link href="/scan">Scan Now</Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button href="/scan" variant="secondary" className="hidden sm:inline-flex">
+            Live Scan
+          </Button>
+          <Button href="/scan">Open ShopRight</Button>
+        </div>
       </div>
     </header>
   );

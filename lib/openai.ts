@@ -1,26 +1,30 @@
-import { OpenAI } from 'openai';
-import { z } from 'zod';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 
 export type StructuredCompletionRequest = {
-  model: string;
-  messages: Array<{ role: string; content: string }>;
-  temperature: number;
-  max_tokens: number;
+  model?: string;
+  messages: ChatCompletionMessageParam[];
+  temperature?: number;
+  max_tokens?: number;
 };
 
-export async function getStructuredCompletion(request: StructuredCompletionRequest) {
-  const completion = await openai.chat.completions.create(request);
-  return completion.choices[0].message.content;
-}
+const apiKey = process.env.OPENAI_API_KEY;
 
-export function validateStructuredResponse<T>(schema: z.Schema<T>, response: string) {
-  try {
-    return schema.parse(JSON.parse(response));
-  } catch (error) {
-    throw new Error(`Invalid response format: ${error.message}`);
+export const openai = apiKey ? new OpenAI({ apiKey }) : null;
+
+export async function getStructuredCompletion(
+  request: StructuredCompletionRequest
+): Promise<string> {
+  if (!openai) {
+    throw new Error("Missing OPENAI_API_KEY");
   }
+
+  const completion = await openai.chat.completions.create({
+    model: request.model ?? "gpt-4o-mini",
+    messages: request.messages,
+    temperature: request.temperature ?? 0.3,
+    max_tokens: request.max_tokens ?? 800,
+  });
+
+  return completion.choices[0]?.message?.content ?? "";
 }

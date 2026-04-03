@@ -1,10 +1,14 @@
-export type Recommendation = {
-  best_item: string;
-  best_value: string;
-  safe_pick: string;
-  adventurous_pick: string;
-  reasoning: string;
-  confidence: number;
-}
+export type RecommendationItem = {
+  item: string;
+  explanation: string;
+  confidence?: number;
+};
 
-export type RecommendationPayload = Recommendation | null;
+export type RecommendationPayload = {
+  best_item: RecommendationItem | null;
+  best_value: RecommendationItem | null;
+  safe_pick: RecommendationItem | null;
+  adventurous_pick: RecommendationItem | null;
+  reasoning: string;
+  confidence?: number;
+};

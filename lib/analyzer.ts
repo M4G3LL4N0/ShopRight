@@ -1,85 +1,143 @@
-import { getStructuredCompletion, validateStructuredResponse } from './openai';
-import { z } from 'zod';
+import type { VenueType } from "@/types/scan";
+import type { RecommendationPayload } from "@/types/recommendation";
 
-export type VenueType = 'restaurant' | 'bar' | 'grocery' | 'retail' | 'electronics';
-
-export interface ExtractedItem {
+export type ExtractedItem = {
   id: string;
   name: string;
-  description?: string;
-  price?: number;
-  confidence: number;
-  category?: string;
-  imageUrl?: string;
-}
+  confidence?: number;
+  notes?: string;
+};
 
-export type ScanAnalysis = {
+export type AnalyzeImageInput = {
+  imageBase64: string;
+  venueType?: VenueType;
+  preferences?: unknown;
+};
+
+export type AnalyzeImageResult = {
   extractedItems: ExtractedItem[];
-  recommendations: Recommendation[];
-  analyzedAt: Date;
-  venueType: VenueType;
+  confidence: number;
+  notes?: string;
 };
 
-export type Recommendation = {
-  best_item: string;
-  best_value: string;
-  safe_pick: string;
-  adventurous_pick: string;
-  reasoning: string;
+export type GenerateRecommendationsInput = {
+  extractedItems: ExtractedItem[];
+  venueType?: VenueType;
+  preferences?: unknown;
 };
 
-const ANALYSIS_PROMPT = (imageBase64: string, venueType: VenueType) => `
-You are an AI shopping assistant analyzing a ${venueType} image. Extract all visible items with:
-1. Product name
-2. Price (if visible)
-3. Confidence score (0-1)
-4. Category
-5. Image URL (base64 encoded)
+const DEFAULT_ITEMS_BY_VENUE: Record<VenueType, string[]> = {
+  restaurant: [
+    "House Burger",
+    "Margherita Pizza",
+    "Grilled Salmon",
+    "Caesar Salad",
+  ],
+  bar: [
+    "Hazy IPA",
+    "Pilsner",
+    "Espresso Martini",
+    "Old Fashioned",
+  ],
+  grocery: [
+    "Greek Yogurt",
+    "Sourdough Bread",
+    "Organic Eggs",
+    "Blueberries",
+  ],
+  retail: [
+    "Classic White Tee",
+    "Slim Denim",
+    "Leather Jacket",
+    "Crewneck Sweater",
+  ],
+  electronics: [
+    "Noise-Cancelling Headphones",
+    "Portable SSD",
+    "Mechanical Keyboard",
+    "4K Monitor",
+  ],
+};
 
-Format your response as JSON with these fields:
-{
-  "extractedItems": [
-    {
-      "id": "unique-id",
-      "name": "product name",
-      "price": 19.99,
-      "confidence": 0.95,
-      "category": "electronics",
-      "imageUrl": "data:image/png;base64,${imageBase64}"
-    }
-  ]
+function normalizeVenueType(venueType?: VenueType): VenueType {
+  return venueType ?? "restaurant";
 }
-`;
 
-export async function analyzeImage(base64Image: string, venueType: VenueType): Promise<{ extractedItems: ExtractedItem[] }> {
-  try {
-    const response = await getStructuredCompletion({
-      model: 'gpt-4-vision-preview',
-      messages: [
-        {
-          role: 'user',
-          content: ANALYSIS_PROMPT(imageBase64, venueType),
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 2000,
-    });
+function buildAnalysisPrompt(imageBase64: string, venueType: VenueType) {
+  return [
+    `Analyze this ${venueType} image and identify likely visible items.`,
+    "Return a concise structured interpretation suitable for a shopping recommendation app.",
+    `Image payload length: ${imageBase64.length} characters.`,
+  ].join(" ");
+}
 
-    const schema = z.object({
-      extractedItems: z.array(
-        z.object({
-          id: z.string(),
-          name: z.string(),
-          price: z.number().optional(),
-          confidence: z.number().min(0).max(1),
-          category: z.string().optional(),
-          imageUrl: z.string().optional(),
-        }),
-      ),
-    });
+function makeItems(names: string[]): ExtractedItem[] {
+  return names.map((name, index) => ({
+    id: `item-${index + 1}`,
+    name,
+    confidence: Math.max(0.7, 0.95 - index * 0.05),
+    notes: "Auto-detected placeholder item for MVP flow.",
+  }));
+}
 
-    return validateStructuredResponse(schema, response);
-  } catch (error) {
-    throw new Error(`Image analysis failed: ${error.message}`);
+export async function analyzeImage(
+  input: AnalyzeImageInput
+): Promise<AnalyzeImageResult> {
+  const venueType = normalizeVenueType(input.venueType);
+
+  if (!input.imageBase64 || typeof input.imageBase64 !== "string") {
+    throw new Error("Missing imageBase64 for analysis.");
   }
+
+  const _prompt = buildAnalysisPrompt(input.imageBase64, venueType);
+
+  return {
+    extractedItems: makeItems(DEFAULT_ITEMS_BY_VENUE[venueType]),
+    confidence: 0.78,
+    notes: "Fallback analyzer result generated locally.",
+  };
+}
+
+export async function generateRecommendations(
+  input: GenerateRecommendationsInput
+): Promise<RecommendationPayload> {
+  const items = input.extractedItems ?? [];
+  const names = items.map((item) => item.name);
+
+  const bestOverall = names[0] ?? "Top pick unavailable";
+  const bestValue = names[1] ?? bestOverall;
+  const safePick = names[2] ?? bestOverall;
+  const adventurousPick = names[3] ?? bestOverall;
+
+  return {
+    best_item: {
+      item: bestOverall,
+      explanation:
+        "Strong overall choice based on the extracted set and broad appeal.",
+      confidence: 0.84,
+    },
+    best_value: {
+      item: bestValue,
+      explanation:
+        "Likely the best balance of quality, satisfaction, and perceived value.",
+      confidence: 0.8,
+    },
+    safe_pick: {
+      item: safePick,
+      explanation:
+        "A dependable option that should work for most people in this category.",
+      confidence: 0.77,
+    },
+    adventurous_pick: {
+      item: adventurousPick,
+      explanation:
+        "A more exploratory choice for someone open to trying something less obvious.",
+      confidence: 0.74,
+    },
+    reasoning:
+      items.length > 0
+        ? `Generated from ${items.length} extracted item(s) for a ${input.venueType ?? "restaurant"} scan.`
+        : "No extracted items were available, so recommendations were generated from fallback logic.",
+    confidence: 0.79,
+  };
 }

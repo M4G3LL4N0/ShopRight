@@ -7,138 +7,203 @@ export default function PricingPage() {
     {
       name: "Free",
       price: "$0",
+      description: "A clean way to try ShopRight and experience the core scan flow.",
       features: [
-        "Unlimited scans per month",
-        "Basic preference memory",
-        "Standard recommendation confidence",
-        "Access to scan history",
+        "Limited scans each month",
+        "Best overall, value, safe, and adventurous picks",
+        "Basic recommendation summaries",
+        "Core menu and shelf scan experience",
       ],
-      cta: { text: "Start Free", href: "/scan" },
-      highlight: false,
+      cta: {
+        text: "Start free",
+        href: "/scan",
+      },
+      featured: false,
     },
     {
       name: "Pro",
-      price: "$19.99/mo",
+      price: "$19",
+      period: "/month",
+      description:
+        "For people who want smarter recommendations, memory, and a sharper buying edge.",
       features: [
-        "Unlimited scans per month",
-        "Advanced preference memory",
-        "Smart personalized recommendations",
-        "Premium confidence scoring",
-        "Priority support",
+        "More monthly scans",
+        "Preference-aware recommendations",
+        "Saved scan history",
+        "Stronger confidence and reasoning layers",
+        "Priority access to new categories",
       ],
-      cta: { text: "Upgrade to Pro", href: "/subscribe/pro" },
-      highlight: true,
+      cta: {
+        text: "Go Pro",
+        href: "/scan",
+      },
+      featured: true,
     },
     {
-      name: "Concierge",
-      price: "$49.99/mo",
+      name: "Power User",
+      price: "$49",
+      period: "/month",
+      description:
+        "For heavy users who want the deepest recommendation layer and future premium capabilities.",
       features: [
-        "Unlimited scans per month",
+        "High scan volume",
         "Advanced preference memory",
-        "Smart personalized recommendations",
-        "Premium confidence scoring",
-        "Retail & alcohol category expansion",
-        "Dedicated account manager",
-        "24/7 priority support",
+        "Priority feature access",
+        "Expanded category support",
+        "Early access to premium intelligence features",
       ],
-      cta: { text: "Get Concierge", href: "/subscribe/concierge" },
-      highlight: false,
+      cta: {
+        text: "Join Power User",
+        href: "/scan",
+      },
+      featured: false,
+    },
+  ];
+
+  const faqs = [
+    {
+      question: "What does ShopRight actually do?",
+      answer:
+        "ShopRight turns photos of menus, shelves, taps, and product displays into ranked recommendations so you can make better buying decisions in the real world.",
+    },
+    {
+      question: "Is this only for restaurants?",
+      answer:
+        "No. The product starts with food and drink use cases, but it is designed as a broader decision layer for retail, electronics, and other real-world shopping environments.",
+    },
+    {
+      question: "Why would I pay for it?",
+      answer:
+        "The paid tiers are built around more scans, richer personalization, stronger memory, and a sharper recommendation engine that gets more useful over time.",
     },
   ];
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white/5 to-white dark:from-black/5 dark:to-black/5 py-20">
-      <section className="container mx-auto px-6 text-center mb-20">
-        <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-white">
-          Pricing that scales with your shopping intelligence
-        </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Choose the plan that matches your shopping style. From free experimentation to
-          enterprise‑grade concierge service, ShopRight gives you the data you need to
-          make smarter, faster, and more confident purchase decisions.
-        </p>
-      </section>
+    <main className="min-h-screen bg-black text-white">
+      <div className="mx-auto max-w-7xl px-6 py-16">
+        <div className="max-w-3xl">
+          <p className="text-xs font-medium uppercase tracking-[0.24em] text-white/45">
+            Pricing
+          </p>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
+            Pricing for better decisions.
+          </h1>
+          <p className="mt-4 text-base leading-7 text-white/65">
+            Start free, then unlock deeper recommendation intelligence,
+            preference memory, and a more powerful real-world buying workflow.
+          </p>
+        </div>
 
-      <section className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-        {plans.map((plan) => (
-          <GlassCard
-            key={plan.name}
-            title={plan.name}
-            subtitle={plan.price}
-            accent={plan.highlight ? "bg-primary/10" : "bg-white/10"}
-            className={cn(plan.highlight && "border-2 border-primary")}
-          >
-            <ul className="space-y-2 text-left text-gray-700 dark:text-gray-300">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-center">
-                  <svg
-                    className="w-4 h-4 mr-2 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {feature}
-                </li>
-              ))}
-            </ul>
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          {plans.map((plan) => (
+            <GlassCard
+              key={plan.name}
+              className={cn(
+                "rounded-[2rem] p-8",
+                plan.featured
+                  ? "border-white/20 bg-white/8 shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+                  : ""
+              )}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-white/75">{plan.name}</p>
+                  <div className="mt-4 flex items-end gap-1">
+                    <span className="text-4xl font-semibold tracking-tight">
+                      {plan.price}
+                    </span>
+                    {plan.period ? (
+                      <span className="pb-1 text-sm text-white/45">
+                        {plan.period}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+
+                {plan.featured ? (
+                  <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/75">
+                    Popular
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mt-5 text-sm leading-6 text-white/65">
+                {plan.description}
+              </p>
+
+              <ul className="mt-6 space-y-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="text-sm leading-6 text-white/78">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6">
+                <Button
+                  href={plan.cta.href}
+                  className="w-full"
+                  variant={plan.featured ? "primary" : "secondary"}
+                >
+                  {plan.cta.text}
+                </Button>
+              </div>
+            </GlassCard>
+          ))}
+        </div>
+
+        <div className="mt-16 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <GlassCard className="rounded-[2rem] p-8">
+            <p className="text-xs font-medium uppercase tracking-[0.24em] text-white/45">
+              Why paid tiers matter
+            </p>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight">
+              ShopRight gets more valuable when it remembers what works for you.
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-white/65">
+              The long-term value is not just running scans. It is building a
+              sharper recommendation layer around your taste, your priorities,
+              and the choices that repeatedly prove worth it.
+            </p>
+          </GlassCard>
+
+          <GlassCard className="rounded-[2rem] p-8">
+            <p className="text-xs font-medium uppercase tracking-[0.24em] text-white/45">
+              CTA
+            </p>
+            <h2 className="mt-4 text-2xl font-semibold tracking-tight">
+              Start with one scan.
+            </h2>
+            <p className="mt-4 text-sm leading-7 text-white/65">
+              The easiest way to understand the product is to use it in a real
+              decision moment.
+            </p>
             <div className="mt-6">
-              <Button asChild className="w-full">
-                <a href={plan.cta.href}>{plan.cta.text}</a>
+              <Button href="/scan" className="w-full">
+                Scan now
               </Button>
             </div>
           </GlassCard>
-        ))}
-      </section>
+        </div>
 
-      <section className="container mx-auto px-6 text-center mb-20">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-          Frequently Asked Questions
-        </h2>
-        <dl className="space-y-6 max-w-3xl mx-auto text-left">
-          <div>
-            <dt className="font-medium text-gray-800 dark:text-gray-200">
-              What is the difference between Pro and Concierge?
-            </dt>
-            <dd className="mt-1 text-gray-600 dark:text-gray-300">
-              Pro gives you unlimited scans, advanced preference memory, and premium confidence
-              scoring. Concierge adds retail & alcohol category expansion, a dedicated account
-              manager, and 24/7 priority support for enterprise‑grade usage.
-            </dd>
+        <div className="mt-16">
+          <p className="text-xs font-medium uppercase tracking-[0.24em] text-white/45">
+            FAQ
+          </p>
+          <div className="mt-6 grid gap-6 md:grid-cols-3">
+            {faqs.map((faq) => (
+              <GlassCard key={faq.question} className="rounded-[2rem] p-6">
+                <h3 className="text-lg font-semibold tracking-tight">
+                  {faq.question}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-white/65">
+                  {faq.answer}
+                </p>
+              </GlassCard>
+            ))}
           </div>
-          <div>
-            <dt className="font-medium text-gray-800 dark:text-gray-200">
-              How does the confidence scoring work?
-            </dt>
-            <dd className="mt-1 text-gray-600 dark:text-gray-300">
-              Our AI model assigns a confidence score to each recommendation based on
-              historical accuracy, user feedback, and contextual relevance. Premium plans
-              expose the full confidence range and allow you to filter results.
-            </dd>
-          </div>
-          <div>
-            <dt className="font-medium text-gray-800 dark:text-gray-200">
-              Can I cancel or downgrade my plan at any time?
-            </dt>
-            <dd className="mt-1 text-gray-600 dark:text-gray-300">
-              Yes. All plans are billed monthly and can be changed or cancelled from your
-              account dashboard without any penalty.
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <section className="container mx-auto px-6 text-center">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-          Trusted by shoppers worldwide
-        </h2>
-        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          ShopRight powers over 1M active users across 50+ countries, helping them save
-          time, money, and stress. Our AI is built on top of OpenAI’s GPT‑4 and
-          continuously learns from millions of real shopping scenarios.
-        </p>
-      </section>
+        </div>
+      </div>
     </main>
   );
 }

@@ -1,23 +1,31 @@
-export type VenueType = 
-  | 'restaurant'
-  | 'bar'
-  | 'grocery'
-  | 'retail'
-  | 'electronics';
+import type { RecommendationPayload } from "@/types/recommendation";
 
-export interface ExtractedItem {
+export type VenueType =
+  | "restaurant"
+  | "bar"
+  | "grocery"
+  | "retail"
+  | "electronics";
+
+export type ExtractedItem = {
   id: string;
   name: string;
-  description?: string;
-  price?: number;
-  confidence: number;
-  category?: string;
-  imageUrl?: string;
-}
+  confidence?: number;
+  notes?: string;
+};
 
 export interface ScanAnalysis {
   extractedItems: ExtractedItem[];
-  recommendations: Recommendation[];
-  analyzedAt: Date;
+  recommendations: RecommendationPayload;
+  analyzedAt: string;
   venueType: VenueType;
+}
+
+export interface ScanRecord {
+  id: string;
+  venueType: VenueType;
+  createdAt: string;
+  imageUrl?: string | null;
+  overallSummary?: string | null;
+  confidence?: number | null;
 }

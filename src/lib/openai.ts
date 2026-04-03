@@ -1,4 +1,34 @@
+import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import type { RecommendationPayload } from "@/types/recommendation";
+
+export type StructuredCompletionRequest = {
+  model?: string;
+  messages: ChatCompletionMessageParam[];
+  temperature?: number;
+  max_tokens?: number;
+};
+
+const apiKey = process.env.OPENAI_API_KEY;
+
+export const openai = apiKey ? new OpenAI({ apiKey }) : null;
+
+export async function getStructuredCompletion(
+  request: StructuredCompletionRequest
+): Promise<string> {
+  if (!openai) {
+    throw new Error("Missing OPENAI_API_KEY");
+  }
+
+  const completion = await openai.chat.completions.create({
+    model: request.model ?? "gpt-4o-mini",
+    messages: request.messages,
+    temperature: request.temperature ?? 0.3,
+    max_tokens: request.max_tokens ?? 800,
+  });
+
+  return completion.choices[0]?.message?.content ?? "";
+}
 
 function pickItem(items: string[], index: number, fallback: string) {
   return items[index] ?? items[0] ?? fallback;
@@ -26,12 +56,12 @@ export async function generateRecommendations(
     },
     safe_pick: {
       item: safePick,
-      explanation: `Dependable option with broad appeal for most people.`,
+      explanation: "Dependable option with broad appeal for most people.",
       confidence: 0.77,
     },
     adventurous_pick: {
       item: adventurousPick,
-      explanation: `A more exploratory pick if you want something less obvious.`,
+      explanation: "A more exploratory pick if you want something less obvious.",
       confidence: 0.74,
     },
     reasoning:

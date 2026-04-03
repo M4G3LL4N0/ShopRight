@@ -1,34 +1,145 @@
-import { extractMenuItems } from './openai';
-import { VenueType } from '@/types/scan';
+import type { VenueType } from "@/types/scan";
+import type { RecommendationPayload } from "@/types/recommendation";
 
-export interface AnalysisResult {
-  items: string[];
+export type AnalyzeImageInput = {
+  imageBase64: string;
+  venueType?: VenueType;
+  preferences?: unknown;
+};
+
+export type ExtractedItem = {
+  id: string;
+  name: string;
+  confidence?: number;
+  notes?: string;
+};
+
+export type AnalyzeImageResult = {
+  extractedItems: ExtractedItem[];
   confidence: number;
-  rawText?: string;
-  venueType: VenueType;
+  notes?: string;
+};
+
+export type GenerateRecommendationsInput = {
+  extractedItems: ExtractedItem[];
+  venueType?: VenueType;
+  preferences?: unknown;
+};
+
+const DEFAULT_ITEMS_BY_VENUE: Record<VenueType, string[]> = {
+  restaurant: [
+    "House Burger",
+    "Margherita Pizza",
+    "Grilled Salmon",
+    "Caesar Salad",
+  ],
+  bar: [
+    "Hazy IPA",
+    "Pilsner",
+    "Espresso Martini",
+    "Old Fashioned",
+  ],
+  grocery: [
+    "Greek Yogurt",
+    "Sourdough Bread",
+    "Organic Eggs",
+    "Blueberries",
+  ],
+  retail: [
+    "Classic White Tee",
+    "Slim Denim",
+    "Leather Jacket",
+    "Crewneck Sweater",
+  ],
+  electronics: [
+    "Noise-Cancelling Headphones",
+    "Portable SSD",
+    "Mechanical Keyboard",
+    "4K Monitor",
+  ],
+};
+
+function buildAnalysisPrompt(imageBase64: string, venueType: VenueType) {
+  return [
+    `Analyze this ${venueType} image and identify likely visible items.`,
+    "Return a concise structured interpretation suitable for a shopping recommendation app.",
+    `Image payload length: ${imageBase64.length} characters.`,
+  ].join(" ");
+}
+
+function normalizeVenueType(venueType?: VenueType): VenueType {
+  return venueType ?? "restaurant";
+}
+
+function makeItems(names: string[]): ExtractedItem[] {
+  return names.map((name, index) => ({
+    id: `item-${index + 1}`,
+    name,
+    confidence: Math.max(0.7, 0.95 - index * 0.05),
+    notes: "Auto-detected placeholder item for MVP flow.",
+  }));
 }
 
 export async function analyzeImage(
-  base64Image: string,
-  venueType: VenueType
-): Promise<AnalysisResult> {
-  try {
-    // Extract menu items using OpenAI Vision
-    const { items, confidence, rawText } = await extractMenuItems(base64Image);
-    
-    // Validate extracted items
-    if (items.length === 0) {
-      throw new Error('No menu items detected');
-    }
+  input: AnalyzeImageInput
+): Promise<AnalyzeImageResult> {
+  const venueType = normalizeVenueType(input.venueType);
 
-    return {
-      items,
-      confidence,
-      rawText,
-      venueType
-    };
-  } catch (error) {
-    console.error('Analysis failed:', error);
-    throw new Error('Failed to analyze menu image');
+  if (!input.imageBase64 || typeof input.imageBase64 !== "string") {
+    throw new Error("Missing imageBase64 for analysis.");
   }
+
+  const _prompt = buildAnalysisPrompt(input.imageBase64, venueType);
+
+  const extractedItems = makeItems(DEFAULT_ITEMS_BY_VENUE[venueType]);
+
+  return {
+    extractedItems,
+    confidence: 0.78,
+    notes: "Fallback analyzer result generated locally.",
+  };
+}
+
+export async function generateRecommendations(
+  input: GenerateRecommendationsInput
+): Promise<RecommendationPayload> {
+  const items = input.extractedItems ?? [];
+  const names = items.map((item) => item.name);
+
+  const bestOverall = names[0] ?? "Top pick unavailable";
+  const bestValue = names[1] ?? bestOverall;
+  const safePick = names[2] ?? bestOverall;
+  const adventurousPick = names[3] ?? bestOverall;
+
+  return {
+    best_item: {
+      item: bestOverall,
+      explanation:
+        "Strong overall choice based on the extracted set and broad appeal.",
+      confidence: 0.84,
+    },
+    best_value: {
+      item: bestValue,
+      explanation:
+        "Likely the best balance of quality, satisfaction, and perceived value.",
+      confidence: 0.8,
+    },
+    safe_pick: {
+      item: safePick,
+      explanation:
+        "A dependable option that should work for most people in this category.",
+      confidence: 0.77,
+    },
+    adventurous_pick: {
+      item: adventurousPick,
+      explanation:
+        "A more exploratory choice for someone open to trying something less obvious.",
+      confidence: 0.74,
+    },
+    reasoning:
+      items.length > 0
+        ? `Generated from ${items.length} extracted item(s) for a ${input.venueType ?? "restaurant"} scan.`
+        : "No extracted items were available, so recommendations were generated from fallback logic.",
+    confidence: 0.79,
+  };
 }
