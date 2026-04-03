@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface UserProfile {
   likesSpicy: boolean;
@@ -8,10 +9,17 @@ interface UserProfile {
   setProfile: (profile: Partial<UserProfile>) => void;
 }
 
-export const useUserProfile = create<UserProfile>((set) => ({
-  likesSpicy: false,
-  prefersHealthy: false,
-  budgetLevel: 'medium',
-  favoriteCuisines: [],
-  setProfile: (profile) => set((state) => ({ ...state, ...profile }))
-}));
+export const useUserProfile = create<UserProfile>()(
+  persist(
+    (set) => ({
+      likesSpicy: false,
+      prefersHealthy: false,
+      budgetLevel: 'medium',
+      favoriteCuisines: [],
+      setProfile: (profile) => set((state) => ({ ...state, ...profile })),
+    }),
+    {
+      name: 'user-profile',
+    }
+  )
+);

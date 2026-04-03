@@ -3,19 +3,38 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { useScanStore } from "@/store/useScanStore";
+import { convertToBase64 } from "@/lib/image";
 
 export function UploadZone() {
-  const { selectedImagePreview, setImage, clearImage } = useScanStore();
+  const {
+    selectedImagePreview,
+    setImage,
+    clearImage,
+    setLoading,
+    setError,
+  } = useScanStore();
 
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[]) => {
       const file = acceptedFiles[0] ?? null;
       if (!file) return;
 
-      const preview = URL.createObjectURL(file);
-      setImage(file, preview);
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const preview = URL.createObjectURL(file);
+        const base64 = await convertToBase64(file);
+        
+        setImage(file, preview, base64);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Upload failed");
+        clearImage();
+      } finally {
+        setLoading(false);
+      }
     },
-    [setImage]
+    [setImage, clearImage, setLoading, setError]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -46,7 +65,7 @@ export function UploadZone() {
         </p>
       </div>
 
-      {selectedImagePreview ? (
+      {selectedImagePreview && (
         <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
           <img
             src={selectedImagePreview}
@@ -61,7 +80,7 @@ export function UploadZone() {
             Remove image
           </button>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

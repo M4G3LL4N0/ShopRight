@@ -51,10 +51,11 @@ export const useScanStore = create<ScanState & ScanActions>()(
 
       setVenueType: (venueType) => set({ venueType }),
 
-      setImage: (file, preview) =>
+      setImage: (file, preview, base64) =>
         set({
           selectedImageFile: file,
           selectedImagePreview: preview,
+          imageBase64: base64,
           error: null,
         }),
 
