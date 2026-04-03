@@ -1,7 +1,7 @@
 import { analyzeImage } from '@/lib/analyzer'
+import { generateRecommendations } from '@/lib/recommender'
 import { type AnalyzeImageInput } from '@/lib/analyzer'
 import { NextResponse } from 'next/server'
-import { validateImage } from '@/lib/image'
 
 export const runtime = 'edge'
 
@@ -9,13 +9,26 @@ export async function POST(request: Request) {
   try {
     const input: AnalyzeImageInput = await request.json()
     
-    // Validate input
     if (!input.imageBase64) {
-      throw new Error('Missing required imageBase64')
+      return NextResponse.json(
+        { error: 'Missing required imageBase64' },
+        { status: 400 }
+      )
     }
 
-    const result = await analyzeImage(input)
-    return NextResponse.json(result)
+    // Analyze image to extract items
+    const { extractedItems } = await analyzeImage(input)
+    
+    // Generate recommendations
+    const recommendations = await generateRecommendations(
+      extractedItems.map(item => item.name),
+      input.venueType ?? 'restaurant'
+    )
+
+    return NextResponse.json({
+      extractedItems,
+      recommendations
+    })
   } catch (error) {
     console.error('Analysis failed:', error)
     return NextResponse.json(

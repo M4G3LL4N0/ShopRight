@@ -59,44 +59,67 @@ const DEFAULT_ITEMS_BY_VENUE: Record<VenueType, string[]> = {
   ],
 };
 
-function buildAnalysisPrompt(imageBase64: string, venueType: VenueType) {
-  return [
-    `Analyze this ${venueType} image and identify likely visible items.`,
-    "Return a concise structured interpretation suitable for a shopping recommendation app.",
-    `Image payload length: ${imageBase64.length} characters.`,
-  ].join(" ");
-}
+import { getStructuredCompletion } from "./openai";
 
-function normalizeVenueType(venueType?: VenueType): VenueType {
-  return venueType ?? "restaurant";
-}
+async function extractItemsWithAI(imageBase64: string, venueType: VenueType): Promise<string[]> {
+  try {
+    const response = await getStructuredCompletion({
+      model: "gpt-4-vision-preview",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analyze this ${venueType} image and extract all visible items. Return ONLY a JSON array of item names in this exact format: ["item1", "item2", ...]`
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${imageBase64}`
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: 1000
+    });
 
-function makeItems(names: string[]): ExtractedItem[] {
-  return names.map((name, index) => ({
-    id: `item-${index + 1}`,
-    name,
-    confidence: Math.max(0.7, 0.95 - index * 0.05),
-    notes: "Auto-detected placeholder item for MVP flow.",
-  }));
+    return JSON.parse(response) as string[];
+  } catch (error) {
+    console.error("AI extraction failed:", error);
+    return [];
+  }
 }
 
 export async function analyzeImage(
   input: AnalyzeImageInput
 ): Promise<AnalyzeImageResult> {
-  const venueType = normalizeVenueType(input.venueType);
+  const venueType = input.venueType ?? "restaurant";
 
-  if (!input.imageBase64 || typeof input.imageBase64 !== "string") {
+  if (!input.imageBase64) {
     throw new Error("Missing imageBase64 for analysis.");
   }
 
-  const _prompt = buildAnalysisPrompt(input.imageBase64, venueType);
-
-  const extractedItems = makeItems(DEFAULT_ITEMS_BY_VENUE[venueType]);
+  // Try AI extraction first
+  const itemNames = await extractItemsWithAI(input.imageBase64, venueType);
+  
+  // Fallback to default items if AI fails
+  const finalItems = itemNames.length > 0 
+    ? itemNames 
+    : DEFAULT_ITEMS_BY_VENUE[venueType];
 
   return {
-    extractedItems,
-    confidence: 0.78,
-    notes: "Fallback analyzer result generated locally.",
+    extractedItems: finalItems.map((name, index) => ({
+      id: `item-${index + 1}`,
+      name,
+      confidence: Math.max(0.7, 0.95 - index * 0.05),
+      notes: "AI-extracted item"
+    })),
+    confidence: itemNames.length > 0 ? 0.85 : 0.65,
+    notes: itemNames.length > 0 
+      ? "AI analysis completed successfully" 
+      : "Used fallback items after AI analysis failed"
   };
 }
 
