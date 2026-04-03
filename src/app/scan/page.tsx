@@ -30,6 +30,57 @@ const scanHighlights = [
 ];
 
 export default function ScanPage() {
+  const {
+    venueType,
+    setVenueType,
+    selectedImagePreview,
+    error,
+    loading,
+    setImage,
+    clearImage,
+    setLoading,
+    setError,
+    markAnalyzed,
+    setExtractedItems,
+    setRecommendations
+  } = useScanStore()
+
+  const handleImageUpload = async (file: File) => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const preview = URL.createObjectURL(file)
+      setImage(file, preview)
+
+      // Convert to base64 and validate
+      const base64 = await convertToBase64(file)
+      
+      // Call analyze API
+      const analysis = await analyzeImage({
+        imageBase64: base64,
+        venueType
+      })
+
+      setExtractedItems(analysis.extractedItems)
+
+      // Call recommendation API
+      const recommendations = await generateRecommendations({
+        extractedItems: analysis.extractedItems,
+        venueType
+      })
+
+      setRecommendations(recommendations)
+      markAnalyzed()
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed')
+      clearImage()
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <main className="relative min-h-screen">
       <div className="site-grid" />
