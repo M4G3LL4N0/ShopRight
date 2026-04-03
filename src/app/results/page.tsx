@@ -65,10 +65,28 @@ export default function ResultsPage() {
               <Button href="/scan" size="lg">
                 Run another scan
               </Button>
-              <Button href="/history" variant="secondary" size="lg">
-                View history
-              </Button>
+              {userPlan === "free" ? (
+                <Button href="/pricing" variant="primary" size="lg">
+                  Upgrade for Full History
+                </Button>
+              ) : (
+                <Button href="/history" variant="secondary" size="lg">
+                  View history
+                </Button>
+              )}
             </div>
+
+            {userPlan === "free" && (
+              <div className="mt-6 rounded-[28px] border border-white/10 bg-white/5 p-6">
+                <h3 className="text-xl font-semibold text-white">Upgrade to Pro</h3>
+                <p className="mt-2 text-sm text-white/60">
+                  Get unlimited scans, full history, and smarter recommendations.
+                </p>
+                <Button href="/pricing" variant="primary" size="sm" className="mt-4">
+                  Learn More
+                </Button>
+              </div>
+            )}
 
             <div className="mt-10 grid gap-5 lg:grid-cols-2">
               {resultCards.map((card) => (

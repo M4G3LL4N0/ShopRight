@@ -39,10 +39,17 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button href="/scan" variant="secondary" className="hidden sm:inline-flex">
-            Live Scan
+          {userPlan === "free" && (
+            <Button href="/pricing" variant="secondary" className="hidden sm:inline-flex">
+              Upgrade
+            </Button>
+          )}
+          <Button href="/scan" variant={userPlan === "pro" ? "primary" : "secondary"} className="hidden sm:inline-flex">
+            {userPlan === "pro" ? "Scan Now" : "Live Scan"}
           </Button>
-          <Button href="/scan">Open ShopRight</Button>
+          <Button href="/scan">
+            Open ShopRight
+          </Button>
         </div>
       </div>
     </header>
