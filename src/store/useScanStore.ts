@@ -1,36 +1,31 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import {
-  type VenueType,
-  type ExtractedItem,
-  type ScanRecord,
-} from "@/types/scan"
-import { type RecommendationPayload } from "@/types/recommendation"
+"use client";
+
+import { create } from "zustand";
+import type { VenueType, ExtractedItem } from "@/types/scan";
+import type { RecommendationPayload } from "@/types/recommendation";
 
 type ScanState = {
-  selectedImageFile: File | null
-  selectedImagePreview: string | null
-  extractedItems: ExtractedItem[]
-  recommendations: RecommendationPayload | null
-  loading: boolean
-  error: string | null
-  analyzedAt: string | null
-  venueType: VenueType
-  previousScans: ScanRecord[]
-}
+  selectedImageFile: File | null;
+  selectedImagePreview: string | null;
+  extractedItems: ExtractedItem[];
+  recommendations: RecommendationPayload | null;
+  loading: boolean;
+  error: string | null;
+  analyzedAt: string | null;
+  venueType: VenueType;
+};
 
 type ScanActions = {
-  setVenueType: (venueType: VenueType) => void
-  setImage: (file: File | null, preview: string | null) => void
-  clearImage: () => void
-  setExtractedItems: (items: ExtractedItem[]) => void
-  setRecommendations: (recs: RecommendationPayload | null) => void
-  setLoading: (loading: boolean) => void
-  setError: (error: string | null) => void
-  markAnalyzed: () => void
-  reset: () => void
-  addToHistory: (scan: Omit<ScanRecord, 'id'>) => void
-}
+  setVenueType: (venueType: VenueType) => void;
+  setImage: (file: File | null, preview: string | null) => void;
+  clearImage: () => void;
+  setExtractedItems: (items: ExtractedItem[]) => void;
+  setRecommendations: (recommendations: RecommendationPayload | null) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  markAnalyzed: () => void;
+  reset: () => void;
+};
 
 const initialState: ScanState = {
   selectedImageFile: null,
@@ -41,71 +36,56 @@ const initialState: ScanState = {
   error: null,
   analyzedAt: null,
   venueType: "restaurant",
-  previousScans: [],
-}
+};
 
-export const useScanStore = create<ScanState & ScanActions>()(
-  persist(
-    (set) => ({
-      ...initialState,
+export const useScanStore = create<ScanState & ScanActions>((set) => ({
+  ...initialState,
 
-      setVenueType: (venueType) => set({ venueType }),
-
-      setImage: (file, preview, base64) =>
-        set({
-          selectedImageFile: file,
-          selectedImagePreview: preview,
-          imageBase64: base64,
-          error: null,
-        }),
-
-      clearImage: () =>
-        set({
-          selectedImageFile: null,
-          selectedImagePreview: null,
-        }),
-
-      setExtractedItems: (items) =>
-        set({
-          extractedItems: items,
-        }),
-
-      setRecommendations: (recommendations) =>
-        set({
-          recommendations,
-        }),
-
-      setLoading: (loading) => set({ loading }),
-
-      setError: (error) => set({ error }),
-
-      markAnalyzed: () =>
-        set({
-          analyzedAt: new Date().toISOString(),
-        }),
-
-      reset: () => set(initialState),
-
-      addToHistory: (scan) =>
-        set((state) => ({
-          previousScans: [
-            {
-              ...scan,
-              id: crypto.randomUUID(),
-              createdAt: new Date().toISOString(),
-            },
-            ...state.previousScans,
-          ],
-        })),
+  setVenueType: (venueType: VenueType) =>
+    set({
+      venueType,
     }),
-    {
-      name: "scan-store",
-      partialize: (state) => 
-        Object.fromEntries(
-          Object.entries(state).filter(([key]) => 
-            !['selectedImageFile', 'loading', 'error'].includes(key)
-          )
-        ),
-    }
-  )
-)
+
+  setImage: (file: File | null, preview: string | null) =>
+    set({
+      selectedImageFile: file,
+      selectedImagePreview: preview,
+      error: null,
+    }),
+
+  clearImage: () =>
+    set({
+      selectedImageFile: null,
+      selectedImagePreview: null,
+    }),
+
+  setExtractedItems: (items: ExtractedItem[]) =>
+    set({
+      extractedItems: items,
+    }),
+
+  setRecommendations: (recommendations: RecommendationPayload | null) =>
+    set({
+      recommendations,
+    }),
+
+  setLoading: (loading: boolean) =>
+    set({
+      loading,
+    }),
+
+  setError: (error: string | null) =>
+    set({
+      error,
+    }),
+
+  markAnalyzed: () =>
+    set({
+      analyzedAt: new Date().toISOString(),
+    }),
+
+  reset: () =>
+    set({
+      ...initialState,
+    }),
+}));
