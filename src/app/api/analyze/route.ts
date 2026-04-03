@@ -25,9 +25,20 @@ export async function POST(request: Request) {
       input.venueType ?? 'restaurant'
     )
 
-    return NextResponse.json({
+    const scanRecord: ScanRecord = {
+      id: crypto.randomUUID(),
+      venueType: input.venueType ?? 'restaurant',
+      createdAt: new Date().toISOString(),
+      imageBase64: input.imageBase64,
       extractedItems,
-      recommendations
+      recommendations,
+      confidence: recommendations.confidence ?? 0.8,
+    };
+
+    addScan(scanRecord);
+
+    return NextResponse.json({
+      ...scanRecord
     })
   } catch (error) {
     console.error('Analysis failed:', error)

@@ -13,6 +13,7 @@ type ScanState = {
   error: string | null;
   analyzedAt: string | null;
   venueType: VenueType;
+  scanHistory: ScanRecord[];
 };
 
 type ScanActions = {
@@ -36,6 +37,7 @@ const initialState: ScanState = {
   error: null,
   analyzedAt: null,
   venueType: "restaurant",
+  scanHistory: [],
 };
 
 export const useScanStore = create<ScanState & ScanActions>((set) => ({
@@ -87,5 +89,15 @@ export const useScanStore = create<ScanState & ScanActions>((set) => ({
   reset: () =>
     set({
       ...initialState,
+    }),
+    
+  addScan: (record: ScanRecord) =>
+    set((state) => ({
+      scanHistory: [record, ...state.scanHistory],
+    })),
+    
+  loadHistory: () =>
+    set({
+      scanHistory: getScanHistory(),
     }),
 }));

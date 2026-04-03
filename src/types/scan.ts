@@ -25,7 +25,22 @@ export interface ScanRecord {
   id: string;
   venueType: VenueType;
   createdAt: string;
-  imageUrl?: string | null;
-  overallSummary?: string | null;
-  confidence?: number | null;
+  imageBase64: string;
+  extractedItems: ExtractedItem[];
+  recommendations: RecommendationPayload;
+  confidence: number;
+  notes?: string;
+}
+
+export interface UserProfile {
+  preferences: {
+    cuisine: string[];
+    drinks: string[];
+    priceSensitivity: 'low' | 'medium' | 'high';
+    likesSpicy: boolean;
+    prefersHealthy: boolean;
+  };
+  historyCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
