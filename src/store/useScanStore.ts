@@ -1,8 +1,10 @@
 "use client";
 
 import { create } from "zustand";
-import type { VenueType, ExtractedItem } from "@/types/scan";
+import type { VenueType, ExtractedItem, ScanRecord } from "@/types/scan";
 import type { RecommendationPayload } from "@/types/recommendation";
+
+type UserPlan = "free" | "pro";
 
 type ScanState = {
   selectedImageFile: File | null;
@@ -13,7 +15,13 @@ type ScanState = {
   error: string | null;
   analyzedAt: string | null;
   venueType: VenueType;
+  userPlan: UserPlan;
+  scanCount: number;
+  scanLimit: number;
+  lastScanDate: string | null;
   scanHistory: ScanRecord[];
+  referralCount: number;
+  lastSharedScan: string | null;
 };
 
 type ScanActions = {
@@ -25,6 +33,13 @@ type ScanActions = {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   markAnalyzed: () => void;
+  setUserPlan: (plan: UserPlan) => void;
+  incrementScanCount: () => void;
+  resetDailyUsageIfNeeded: () => void;
+  addScan: (scan: ScanRecord) => void;
+  loadHistory: (scans: ScanRecord[]) => void;
+  setLastSharedScan: (scanId: string | null) => void;
+  incrementReferralCount: () => void;
   reset: () => void;
 };
 
@@ -37,10 +52,20 @@ const initialState: ScanState = {
   error: null,
   analyzedAt: null,
   venueType: "restaurant",
+  userPlan: "free",
+  scanCount: 0,
+  scanLimit: 3,
+  lastScanDate: null,
   scanHistory: [],
+  referralCount: 0,
+  lastSharedScan: null,
 };
 
-export const useScanStore = create<ScanState & ScanActions>((set) => ({
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export const useScanStore = create<ScanState & ScanActions>((set, get) => ({
   ...initialState,
 
   setVenueType: (venueType: VenueType) =>
@@ -86,18 +111,57 @@ export const useScanStore = create<ScanState & ScanActions>((set) => ({
       analyzedAt: new Date().toISOString(),
     }),
 
+  setUserPlan: (plan: UserPlan) =>
+    set({
+      userPlan: plan,
+      scanLimit: plan === "pro" ? Number.MAX_SAFE_INTEGER : 3,
+    }),
+
+  incrementScanCount: () => {
+    const { userPlan, scanCount } = get();
+    const today = todayKey();
+
+    set({
+      scanCount: userPlan === "pro" ? scanCount : scanCount + 1,
+      lastScanDate: today,
+    });
+  },
+
+  resetDailyUsageIfNeeded: () => {
+    const { lastScanDate, userPlan } = get();
+    const today = todayKey();
+
+    if (lastScanDate !== today) {
+      set({
+        scanCount: 0,
+        lastScanDate: today,
+        scanLimit: userPlan === "pro" ? Number.MAX_SAFE_INTEGER : 3,
+      });
+    }
+  },
+
+  addScan: (scan: ScanRecord) =>
+    set((state) => ({
+      scanHistory: [scan, ...state.scanHistory],
+    })),
+
+  loadHistory: (scans: ScanRecord[]) =>
+    set({
+      scanHistory: scans,
+    }),
+
+  setLastSharedScan: (scanId: string | null) =>
+    set({
+      lastSharedScan: scanId,
+    }),
+
+  incrementReferralCount: () =>
+    set((state) => ({
+      referralCount: state.referralCount + 1,
+    })),
+
   reset: () =>
     set({
       ...initialState,
-    }),
-    
-  addScan: (record: ScanRecord) =>
-    set((state) => ({
-      scanHistory: [record, ...state.scanHistory],
-    })),
-    
-  loadHistory: () =>
-    set({
-      scanHistory: getScanHistory(),
     }),
 }));
