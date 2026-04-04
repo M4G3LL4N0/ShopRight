@@ -156,9 +156,28 @@ export const useScanStore = create<ScanState & ScanActions>((set, get) => ({
     }),
 
   incrementReferralCount: () =>
-    set((state) => ({
-      referralCount: state.referralCount + 1,
-    })),
+    set((state) => {
+      const newCount = state.referralCount + 1;
+      // Give bonus scans for referrals
+      const scanBonus = Math.floor(newCount / 3); // +1 scan per 3 referrals
+      return {
+        referralCount: newCount,
+        scanLimit: state.userPlan === 'pro' 
+          ? Number.MAX_SAFE_INTEGER 
+          : 3 + scanBonus
+      };
+    }),
+
+  applyReferral: (code: string) => {
+    if (code === get().referralCode) return; // Can't refer self
+    
+    set({
+      referredBy: code,
+      scanLimit: get().userPlan === 'pro' 
+        ? Number.MAX_SAFE_INTEGER 
+        : 4 // +1 scan for being referred
+    });
+  },
 
   reset: () =>
     set({

@@ -87,8 +87,21 @@ export default function HistoryPage() {
                       <div className="mt-2 text-lg font-semibold text-white">
                         {item.topPick}
                       </div>
-                      <div className="mt-4 text-xs uppercase tracking-[0.16em] text-white/34">
-                        {item.time}
+                      <div className="mt-4 flex items-center justify-between">
+                        <span className="text-xs uppercase tracking-[0.16em] text-white/34">
+                          {item.time}
+                        </span>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `Check out what I found with ShopRight: ${window.location.origin}/share/${item.id}`
+                            );
+                            toast.success('Link copied!');
+                          }}
+                          className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                        >
+                          Share
+                        </button>
                       </div>
                     </div>
                   </div>
