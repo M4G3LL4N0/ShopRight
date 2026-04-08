@@ -185,7 +185,6 @@ textarea {
     box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
     border-color 280ms cubic-bezier(0.22, 1, 0.36, 1),
     background 280ms cubic-bezier(0.22, 1, 0.36, 1);
-}
 
 .feature-card::before {
   content: "";
