@@ -1,50 +1,71 @@
-import { analyzeImage } from '@/lib/analyzer'
-import { generateRecommendations } from '@/lib/recommender'
-import { type AnalyzeImageInput } from '@/lib/analyzer'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
+import type { ScanRecord, VenueType } from "@/types/scan";
+import { analyzeImage } from "@/lib/analyzer";
+import { generateRecommendations } from "@/lib/recommender";
 
-export const runtime = 'edge'
+type AnalyzeRequestBody = {
+  image?: string;
+  venueType?: VenueType;
+};
 
-export async function POST(request: Request) {
+const scanHistory: ScanRecord[] = [];
+
+export async function POST(req: NextRequest) {
   try {
-    const input: AnalyzeImageInput = await request.json()
-    
-    if (!input.imageBase64) {
+    const input = (await req.json()) as AnalyzeRequestBody;
+
+    if (!input.image) {
       return NextResponse.json(
-        { error: 'Missing required imageBase64' },
+        { error: "Missing image payload." },
         { status: 400 }
-      )
+      );
     }
 
-    // Analyze image to extract items
-    const { extractedItems } = await analyzeImage(input)
-    
-    // Generate recommendations
+    const extractedItems = await analyzeImage({
+      imageBase64: input.image,
+      venueType: input.venueType ?? "restaurant",
+    });
+
     const recommendations = await generateRecommendations(
-      extractedItems.map(item => item.name),
-      input.venueType ?? 'restaurant'
-    )
+      Array.isArray(extractedItems?.extractedItems)
+        ? extractedItems.extractedItems.map((item) =>
+            typeof item === "string" ? item : item.name
+          )
+        : [],
+      input.venueType ?? "restaurant"
+    );
 
     const scanRecord: ScanRecord = {
       id: crypto.randomUUID(),
-      venueType: input.venueType ?? 'restaurant',
+      venueType: input.venueType ?? "restaurant",
       createdAt: new Date().toISOString(),
-      imageBase64: input.imageBase64,
-      extractedItems,
+      image: input.image,
+      extractedItems: extractedItems.extractedItems ?? [],
       recommendations,
-      confidence: recommendations.confidence ?? 0.8,
+      overallSummary: recommendations.reasoning,
+      confidence: recommendations.confidence ?? null,
     };
 
-    addScan(scanRecord);
+    scanHistory.unshift(scanRecord);
 
     return NextResponse.json({
-      ...scanRecord
-    })
+      id: scanRecord.id,
+      extractedItems: scanRecord.extractedItems,
+      recommendations: scanRecord.recommendations,
+      scanRecord,
+    });
   } catch (error) {
-    console.error('Analysis failed:', error)
+    console.error("Analyze route error:", error);
+
     return NextResponse.json(
-      { error: 'Image analysis failed' },
+      { error: "Failed to analyze image." },
       { status: 500 }
-    )
+    );
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    scans: scanHistory,
+  });
 }

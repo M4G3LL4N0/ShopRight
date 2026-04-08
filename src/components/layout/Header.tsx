@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { useScanStore } from "@/store/useScanStore";
 
 const nav = [
   { href: "#product", label: "Product" },
@@ -9,11 +12,13 @@ const nav = [
 ];
 
 export function Header() {
+  const { userPlan } = useScanStore();
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/8 bg-[#050914]/72 backdrop-blur-2xl">
       <div className="container-shell flex h-[76px] items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-sm font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)]">
+        <Link href="/" className="flex items-center gap-3 lift-hover">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-sm font-semibold text-white shadow-[0_8px_28px_rgba(0,0,0,0.28)] transition duration-300 hover:border-white/20 hover:bg-white/10">
             SR
           </div>
           <div>
@@ -31,7 +36,7 @@ export function Header() {
             <a
               key={item.href}
               href={item.href}
-              className="text-sm text-white/60 transition hover:text-white"
+              className="link-hover text-sm text-white/60"
             >
               {item.label}
             </a>
@@ -40,16 +45,16 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           {userPlan === "free" && (
-            <Button href="/pricing" variant="secondary" className="hidden sm:inline-flex">
+            <Button
+              href="/pricing"
+              variant="secondary"
+              className="hidden sm:inline-flex"
+            >
               Upgrade
             </Button>
           )}
-          <Button href="/scan" variant={userPlan === "pro" ? "primary" : "secondary"} className="hidden sm:inline-flex">
-            {userPlan === "pro" ? "Scan Now" : "Live Scan"}
-          </Button>
-          <Button href="/scan">
-            Open ShopRight
-          </Button>
+
+          <Button href="/scan">Open ShopRight</Button>
         </div>
       </div>
     </header>

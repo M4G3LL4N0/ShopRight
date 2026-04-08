@@ -1,41 +1,48 @@
+"use client";
+
 import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
-
-const resultCards = [
-  {
-    label: "Best Overall",
-    title: "House Burger",
-    body: "Strong all-around choice with broad appeal, high satisfaction likelihood, and the clearest overall recommendation profile.",
-  },
-  {
-    label: "Best Value",
-    title: "Margherita Pizza",
-    body: "Best balance of quality and perceived price-to-satisfaction ratio among the visible options.",
-  },
-  {
-    label: "Safe Pick",
-    title: "Grilled Salmon",
-    body: "Dependable option with lower downside risk and broad compatibility for most users.",
-  },
-  {
-    label: "Adventurous Pick",
-    title: "Chef’s Special",
-    body: "Higher-upside exploratory choice for someone open to a less obvious but potentially more memorable selection.",
-  },
-];
-
-const extractedItems = [
-  "House Burger",
-  "Margherita Pizza",
-  "Grilled Salmon",
-  "Caesar Salad",
-  "Fries",
-  "Chef’s Special",
-];
+import { useScanStore } from "@/store/useScanStore";
 
 export default function ResultsPage() {
+  const { recommendations, extractedItems, venueType, userPlan } = useScanStore();
+
+  const resultCards = recommendations
+    ? [
+        {
+          label: "Best Overall",
+          title: recommendations.best_item?.item ?? "No recommendation",
+          body:
+            recommendations.best_item?.explanation ??
+            "No explanation available.",
+        },
+        {
+          label: "Best Value",
+          title: recommendations.best_value?.item ?? "No recommendation",
+          body:
+            recommendations.best_value?.explanation ??
+            "No explanation available.",
+        },
+        {
+          label: "Safe Pick",
+          title: recommendations.safe_pick?.item ?? "No recommendation",
+          body:
+            recommendations.safe_pick?.explanation ??
+            "No explanation available.",
+        },
+        {
+          label: "Adventurous Pick",
+          title:
+            recommendations.adventurous_pick?.item ?? "No recommendation",
+          body:
+            recommendations.adventurous_pick?.explanation ??
+            "No explanation available.",
+        },
+      ]
+    : [];
+
   return (
     <main className="relative min-h-screen">
       <div className="site-grid" />
@@ -71,42 +78,45 @@ export default function ResultsPage() {
                 </Button>
               ) : (
                 <Button href="/history" variant="secondary" size="lg">
-                  View history
+                  View History
                 </Button>
               )}
             </div>
 
-            {userPlan === "free" && (
-              <div className="mt-6 rounded-[28px] border border-white/10 bg-white/5 p-6">
-                <h3 className="text-xl font-semibold text-white">Upgrade to Pro</h3>
-                <p className="mt-2 text-sm text-white/60">
-                  Get unlimited scans, full history, and smarter recommendations.
-                </p>
-                <Button href="/pricing" variant="primary" size="sm" className="mt-4">
-                  Learn More
-                </Button>
-              </div>
-            )}
-
             <div className="mt-10 grid gap-5 lg:grid-cols-2">
-              {resultCards.map((card) => (
-                <div
-                  key={card.label}
-                  className="feature-card rounded-[30px] p-6 sm:p-7"
-                >
-                  <div className="soft-pill inline-flex rounded-full px-4 py-2 text-[11px] text-white/62">
-                    {card.label}
+              {resultCards.length > 0 ? (
+                resultCards.map((card) => (
+                  <div
+                    key={card.label}
+                    className="feature-card rounded-[30px] p-6 sm:p-7"
+                  >
+                    <div className="soft-pill inline-flex rounded-full px-4 py-2 text-[11px] text-white/62">
+                      {card.label}
+                    </div>
+
+                    <h2 className="mt-6 text-[30px] font-semibold leading-[1.04] tracking-[-0.04em] text-white">
+                      {card.title}
+                    </h2>
+
+                    <p className="mt-4 text-sm leading-7 text-white/58">
+                      {card.body}
+                    </p>
                   </div>
-
+                ))
+              ) : (
+                <div className="feature-card rounded-[30px] p-6 sm:p-7 lg:col-span-2">
+                  <div className="soft-pill inline-flex rounded-full px-4 py-2 text-[11px] text-white/62">
+                    No results yet
+                  </div>
                   <h2 className="mt-6 text-[30px] font-semibold leading-[1.04] tracking-[-0.04em] text-white">
-                    {card.title}
+                    Run a scan to generate recommendations
                   </h2>
-
                   <p className="mt-4 text-sm leading-7 text-white/58">
-                    {card.body}
+                    Upload a menu, shelf, or product photo and ShopRight will
+                    generate ranked recommendations here.
                   </p>
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="mt-10 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
@@ -118,9 +128,8 @@ export default function ResultsPage() {
                   The recommendation stack is built around usefulness, not noise.
                 </h3>
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-white/58">
-                  Instead of forcing users to parse scattered opinions, ShopRight
-                  reduces the decision into a cleaner ranking structure based on
-                  likely appeal, value, safety, and exploration potential.
+                  {recommendations?.reasoning ??
+                    "Once you run a scan, ShopRight will explain how it arrived at its best overall, best value, safe, and adventurous picks."}
                 </p>
               </div>
 
@@ -130,18 +139,25 @@ export default function ResultsPage() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {extractedItems.map((item) => (
-                    <span
-                      key={item}
-                      className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-white/74"
-                    >
-                      {item}
+                  {extractedItems.length > 0 ? (
+                    extractedItems.map((item) => (
+                      <span
+                        key={typeof item === "string" ? item : item.id}
+                        className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-white/74"
+                      >
+                        {typeof item === "string" ? item : item.name}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-white/56">
+                      No extracted items available yet.
                     </span>
-                  ))}
+                  )}
                 </div>
 
                 <div className="mt-6 text-xs uppercase tracking-[0.16em] text-white/34">
-                  Confidence 0.84
+                  {venueType} · confidence{" "}
+                  {recommendations?.confidence?.toFixed(2) ?? "0.00"}
                 </div>
               </div>
             </div>
@@ -151,12 +167,11 @@ export default function ResultsPage() {
                 Next step
               </div>
               <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white">
-                Push this into a real live scanner and connected recommendation engine.
+                Share this result or run another live scan.
               </h3>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/56">
-                This page is the premium results surface. The next layer is
-                wiring the real scan state and AI outputs into this layout so it
-                becomes a true product experience instead of a static demo.
+                ShopRight becomes more valuable as you build a history of scans,
+                preferences, and stronger decision patterns over time.
               </p>
               <Link
                 href="/scan"

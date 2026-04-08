@@ -164,6 +164,11 @@ textarea {
   box-shadow:
     0 12px 46px rgba(0,0,0,0.34),
     inset 0 1px 0 rgba(255,255,255,0.06);
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .feature-card::before {
@@ -174,5 +179,124 @@ textarea {
     radial-gradient(circle at 14% 16%, rgba(255,255,255,0.10), transparent 16%),
     linear-gradient(135deg, rgba(255,255,255,0.04), transparent 45%);
   pointer-events: none;
+}
+
+.feature-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    135deg,
+    rgba(122, 154, 255, 0.22),
+    rgba(94, 220, 255, 0.08) 35%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  opacity: 0;
+  transition: opacity 280ms ease;
+  pointer-events: none;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: rgba(160, 188, 255, 0.22);
+  box-shadow:
+    0 24px 60px rgba(0,0,0,0.42),
+    0 0 70px rgba(68, 108, 255, 0.12),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.feature-card:hover::after {
+  opacity: 1;
+}
+
+.interactive-panel {
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.interactive-panel:hover {
+  transform: translateY(-4px);
+  border-color: rgba(160, 188, 255, 0.18);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.36),
+    0 0 60px rgba(67, 110, 255, 0.10),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+}
+
+.link-hover {
+  position: relative;
+  transition: color 220ms ease, opacity 220ms ease;
+}
+
+.link-hover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(131, 161, 255, 0), rgba(131, 161, 255, 0.95), rgba(108, 228, 255, 0));
+  transform: scaleX(0.35);
+  transform-origin: center;
+  opacity: 0;
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 240ms ease;
+}
+
+.link-hover:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.link-hover:hover {
+  color: rgba(255,255,255,0.98);
+}
+
+.button-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.button-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 35%,
+      rgba(255,255,255,0.22) 50%,
+      transparent 65%,
+      transparent 100%
+    );
+  transform: translateX(-140%);
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.button-shimmer:hover::before {
+  transform: translateX(140%);
+}
+
+.button-shimmer > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lift-hover {
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lift-hover:hover {
+  transform: translateY(-3px);
 }
 

@@ -1,85 +1,92 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/Button";
+import { useScanStore } from "@/store/useScanStore";
 
 const venueTypes = [
-  "Restaurant",
-  "Bar",
-  "Grocery",
-  "Retail",
-  "Electronics",
-];
-
-const scanHighlights = [
-  {
-    title: "Best Overall",
-    body: "Find the strongest first-choice option without digging through scattered reviews.",
-  },
-  {
-    title: "Best Value",
-    body: "Surface the option that gives the best balance of quality and price.",
-  },
-  {
-    title: "Safe Pick",
-    body: "Reduce downside risk with a dependable recommendation for most people.",
-  },
-  {
-    title: "Adventurous Pick",
-    body: "Get a higher-upside option when you want something less obvious.",
-  },
-];
+  { value: "restaurant", label: "Restaurant" },
+  { value: "bar", label: "Bar" },
+  { value: "grocery", label: "Grocery" },
+  { value: "retail", label: "Retail" },
+  { value: "electronics", label: "Electronics" },
+] as const;
 
 export default function ScanPage() {
+  const router = useRouter();
+
   const {
     venueType,
-    setVenueType,
+    selectedImageFile,
     selectedImagePreview,
-    error,
     loading,
+    error,
+    setVenueType,
     setImage,
     clearImage,
     setLoading,
     setError,
-    markAnalyzed,
     setExtractedItems,
-    setRecommendations
-  } = useScanStore()
+    setRecommendations,
+    markAnalyzed,
+  } = useScanStore();
 
   const handleImageUpload = async (file: File) => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const preview = URL.createObjectURL(file)
-      setImage(file, preview)
+    const preview = URL.createObjectURL(file);
+    setImage(file, preview);
+    setError(null);
+  };
 
-      // Convert to base64 and validate
-      const base64 = await convertToBase64(file)
-      
-      // Call analyze API
-      const analysis = await analyzeImage({
-        imageBase64: base64,
-        venueType
-      })
+  const fileToDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("Failed to read image file."));
+      reader.readAsDataURL(file);
+    });
 
-      setExtractedItems(analysis.extractedItems)
-
-      // Call recommendation API
-      const recommendations = await generateRecommendations({
-        extractedItems: analysis.extractedItems,
-        venueType
-      })
-
-      setRecommendations(recommendations)
-      markAnalyzed()
-      
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
-      clearImage()
-    } finally {
-      setLoading(false)
+  const handleAnalyze = async () => {
+    if (!selectedImageFile) {
+      setError("Please upload an image first.");
+      return;
     }
-  }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const image = await fileToDataUrl(selectedImageFile);
+
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image,
+          venueType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to analyze image.");
+      }
+
+      setExtractedItems(data.extractedItems ?? []);
+      setRecommendations(data.recommendations ?? null);
+      markAnalyzed();
+
+      router.push("/results");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to analyze image.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="relative min-h-screen">
@@ -100,88 +107,153 @@ export default function ScanPage() {
               </div>
 
               <p className="max-w-2xl text-[16px] leading-8 text-white/58 lg:justify-self-end">
-                ShopRight is designed for the exact moment you are choosing from
-                a menu, shelf, tap list, or product display and want a cleaner,
-                faster answer.
+                Upload a menu, tap list, shelf, or product display and turn the
+                visible options into ranked recommendations.
               </p>
             </div>
 
             <div className="mt-10 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="feature-card rounded-[30px] p-6 sm:p-7">
                 <div className="soft-pill inline-flex rounded-full px-4 py-2 text-[11px] text-white/62">
-                  Upload surface
+                  Scan input
                 </div>
 
                 <h2 className="mt-6 text-[30px] font-semibold leading-[1.04] tracking-[-0.04em] text-white">
-                  Premium scan entry point
+                  Upload a photo to analyze
                 </h2>
 
                 <p className="mt-4 max-w-2xl text-sm leading-7 text-white/58">
-                  This is the premium shell for the real scanner flow. It should
-                  evolve into drag and drop upload, live camera capture, OCR,
-                  extraction, and ranked AI recommendations.
+                  ShopRight works best with clear images of menus, shelves, tap
+                  lists, and product displays.
                 </p>
 
-                <div className="mt-8 rounded-[28px] border border-dashed border-white/12 bg-white/[0.04] p-10 text-center">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] border border-white/10 bg-white/6 text-white/76">
-                    SR
+                <div className="mt-8 space-y-6">
+                  <div>
+                    <label className="mb-3 block text-[11px] uppercase tracking-[0.22em] text-white/38">
+                      Venue type
+                    </label>
+
+                    <select
+                      value={venueType}
+                      onChange={(e) =>
+                        setVenueType(
+                          e.target.value as
+                            | "restaurant"
+                            | "bar"
+                            | "grocery"
+                            | "retail"
+                            | "electronics"
+                        )
+                      }
+                      className="w-full rounded-[20px] border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"
+                    >
+                      {venueTypes.map((item) => (
+                        <option
+                          key={item.value}
+                          value={item.value}
+                          className="bg-[#0b1020]"
+                        >
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
-                  <h3 className="mt-5 text-2xl font-semibold tracking-[-0.03em] text-white">
-                    Upload a menu, shelf, or product photo
-                  </h3>
+                  <div className="rounded-[28px] border border-dashed border-white/12 bg-white/[0.04] p-8 text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          void handleImageUpload(file);
+                        }
+                      }}
+                      className="mx-auto block w-full max-w-md text-sm text-white/70 file:mr-4 file:rounded-2xl file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-black"
+                    />
 
-                  <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/56">
-                    Drag and drop will go here. This page is now a valid premium
-                    module and can be wired into the real scan engine next.
-                  </p>
-
-                  <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-center">
-                    <Button href="/results" size="lg">
-                      View demo results
-                    </Button>
-                    <Button href="/pricing" variant="secondary" size="lg">
-                      Unlock premium intelligence
-                    </Button>
+                    <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/56">
+                      Use a sharp, readable image for the best extraction and
+                      recommendation results.
+                    </p>
                   </div>
+
+                  {selectedImagePreview ? (
+                    <div className="rounded-[28px] border border-white/10 bg-white/5 p-4">
+                      <img
+                        src={selectedImagePreview}
+                        alt="Selected preview"
+                        className="max-h-[460px] w-full rounded-[22px] object-cover"
+                      />
+
+                      <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                        <Button
+                          onClick={handleAnalyze}
+                          size="lg"
+                          className="sm:flex-1"
+                        >
+                          {loading ? "Analyzing..." : "Analyze image"}
+                        </Button>
+
+                        <Button
+                          onClick={clearImage}
+                          variant="secondary"
+                          size="lg"
+                          className="sm:flex-1"
+                        >
+                          Remove image
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-[24px] border border-white/10 bg-white/5 p-5 text-sm text-white/52">
+                      No image uploaded yet.
+                    </div>
+                  )}
+
+                  {error ? (
+                    <div className="rounded-[20px] border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+                      {error}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
               <div className="grid gap-5">
                 <div className="metric-panel rounded-[28px] p-6">
                   <div className="text-[11px] uppercase tracking-[0.22em] text-white/36">
-                    Venue types
+                    Recommendation outputs
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {venueTypes.map((type) => (
-                      <span
-                        key={type}
-                        className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-white/74"
+
+                  <div className="mt-4 grid gap-3">
+                    {[
+                      "Best Overall",
+                      "Best Value",
+                      "Safe Pick",
+                      "Adventurous Pick",
+                    ].map((label) => (
+                      <div
+                        key={label}
+                        className="rounded-[20px] border border-white/10 bg-white/5 p-4 text-sm text-white/74"
                       >
-                        {type}
-                      </span>
+                        {label}
+                      </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="metric-panel rounded-[28px] p-6">
                   <div className="text-[11px] uppercase tracking-[0.22em] text-white/36">
-                    Recommendation outputs
+                    Supported venues
                   </div>
-
-                  <div className="mt-4 grid gap-3">
-                    {scanHighlights.map((item) => (
-                      <div
-                        key={item.title}
-                        className="rounded-[20px] border border-white/10 bg-white/5 p-4"
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {venueTypes.map((item) => (
+                      <span
+                        key={item.value}
+                        className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs text-white/74"
                       >
-                        <div className="text-sm font-semibold text-white">
-                          {item.title}
-                        </div>
-                        <p className="mt-2 text-sm leading-6 text-white/56">
-                          {item.body}
-                        </p>
-                      </div>
+                        {item.label}
+                      </span>
                     ))}
                   </div>
                 </div>
@@ -191,28 +263,15 @@ export default function ScanPage() {
                     Product direction
                   </div>
                   <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white">
-                    This page should feel premium before the full logic is wired in.
+                    Premium scan surface, wired to real outputs.
                   </h3>
                   <p className="mt-4 text-sm leading-7 text-white/58">
-                    The goal is to keep the visual system strong while the real
-                    scanner, extraction, and recommendation pipeline are added
-                    step by step.
+                    This page is connected to the shared scan store and posts to
+                    the analyze route so the results page can render a real scan
+                    session.
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div className="mt-10 rounded-[28px] border border-dashed border-white/10 bg-white/4 p-8 text-center">
-              <div className="text-[11px] uppercase tracking-[0.24em] text-white/36">
-                Build path
-              </div>
-              <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white">
-                Next: connect this surface to the real upload and analysis flow.
-              </h3>
-              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/56">
-                This fixes the broken module problem cleanly and preserves the
-                premium site direction while you stabilize the rest of the app.
-              </p>
             </div>
           </div>
         </div>
