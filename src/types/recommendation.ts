@@ -1,3 +1,10 @@
+export type VenueType =
+  | "restaurant"
+  | "bar"
+  | "grocery"
+  | "retail"
+  | "electronics";
+
 export type RecommendationItem = {
   item: string;
   explanation: string;
