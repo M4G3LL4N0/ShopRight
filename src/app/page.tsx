@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Hero } from "@/components/marketing/Hero";
 import { FeatureGrid } from "@/components/marketing/FeatureGrid";
 import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { CTASection } from "@/components/marketing/CTASection";
+import { FeatureGridSkeleton } from "@/components/marketing/FeatureGridSkeleton";
 
 const showcaseTiles = [
   {
@@ -51,6 +53,12 @@ const showcaseTiles = [
 ];
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <main className="relative min-h-screen">
       <div className="site-grid" />
@@ -75,8 +83,12 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {showcaseTiles.map((tile) => (
+            <div className="mt-10">
+              {isLoading ? (
+                <FeatureGridSkeleton />
+              ) : (
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {showcaseTiles.map((tile) => (
                 <div key={tile.title} className="poster-card min-h-[340px]">
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${tile.palette}`}
@@ -105,7 +117,9 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              ))}
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
