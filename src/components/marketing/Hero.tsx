@@ -5,7 +5,7 @@ export function Hero() {
     <section className="section-divider relative overflow-hidden">
       <div className="container-shell relative py-20 sm:py-24 lg:py-28">
         <div className="glass-panel relative overflow-hidden rounded-[38px] px-6 py-10 sm:px-10 sm:py-14 lg:px-14 lg:py-18">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(66,104,255,0.18),transparent_22%),radial-gradient(circle_at_82%_20%,rgba(57,208,255,0.12),transparent_22%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(66,104,255,0.24),transparent_28%),radial-gradient(circle_at_82%_20%,rgba(57,208,255,0.18),transparent_28%)] opacity-0 animate-fadeIn opacity-100" />
 
           <div className="relative grid items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
@@ -51,7 +51,7 @@ export function Hero() {
               </div>
             </div>
 
-            <div className="relative">
+            <div className="relative hover:[transform:rotate3d(0.5,-0.866,0,15deg)_scale(1.05)] transition-transform duration-700 ease-out">
               <div className="poster-card bg-[linear-gradient(145deg,rgba(73,100,255,0.24),rgba(17,24,42,0.92)_36%,rgba(5,10,20,0.95)_100%)] p-3 sm:p-4">
                 <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(100,190,255,0.14),transparent_24%),linear-gradient(180deg,rgba(8,16,32,0.72),rgba(6,10,18,0.92))] p-5">
                   <div className="soft-pill inline-flex rounded-full px-4 py-2 text-[11px] text-white/64">

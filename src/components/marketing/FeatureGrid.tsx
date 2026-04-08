@@ -53,7 +53,11 @@ export function FeatureGrid() {
 
         <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
-            <div key={card.title} className="feature-card p-6 sm:p-7">
+            <div 
+              key={card.title} 
+              className="feature-card p-6 sm:p-7 hover:border-white/20 transition-all duration-300"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
               <div className="soft-pill inline-flex rounded-full px-4 py-2 text-[11px] text-white/62">
                 {card.tag}
               </div>

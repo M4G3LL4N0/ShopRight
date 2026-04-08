@@ -12,7 +12,7 @@ export function CTASection() {
               <div className="text-[11px] uppercase tracking-[0.26em] text-white/40">
                 Strategic positioning
               </div>
-              <h2 className="mt-4 max-w-4xl text-4xl font-semibold tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl">
+              <h2 className="mt-4 max-w-4xl text-4xl font-semibold tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl hover:[text-shadow:0_0_15px_rgba(255,255,255,0.3)] transition-all duration-300">
                 A consumer product with a much bigger data and intelligence trajectory.
               </h2>
               <p className="mt-6 max-w-3xl text-[16px] leading-8 text-white/60">
